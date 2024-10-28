@@ -537,9 +537,7 @@ class Interp {
 						hasOpt = true;
 					else
 						minParams++;
-				trace(minParams);
 				var f = function(args: Array<Dynamic>) {
-					trace(args.length);
 					if (((args == null) ? 0 : args.length) != params.length) {
 						if (args.length < minParams) {
 							var str = "Invalid number of parameters. Got " + args.length + ", required " + minParams;
