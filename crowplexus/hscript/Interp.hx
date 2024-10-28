@@ -533,9 +533,13 @@ class Interp {
 				for (p in params)
 					if (p.opt)
 						hasOpt = true;
+					else if (p.value != null)
+						hasOpt = true;
 					else
 						minParams++;
+				trace(minParams);
 				var f = function(args: Array<Dynamic>) {
+					trace(args.length);
 					if (((args == null) ? 0 : args.length) != params.length) {
 						if (args.length < minParams) {
 							var str = "Invalid number of parameters. Got " + args.length + ", required " + minParams;
@@ -548,12 +552,12 @@ class Interp {
 						var extraParams = args.length - minParams;
 						var pos = 0;
 						for (p in params)
-							if (p.opt) {
+							if (p.opt || p.value != null) {
 								if (extraParams > 0) {
 									args2.push(args[pos++]);
 									extraParams--;
 								} else
-									args2.push(null);
+									args2.push(p.value == null ? null : expr(p.value));
 							} else
 								args2.push(args[pos++]);
 						args = args2;
@@ -561,8 +565,14 @@ class Interp {
 					var old = me.locals, depth = me.depth;
 					me.depth++;
 					me.locals = me.duplicate(capturedLocals);
-					for (i in 0...params.length)
-						me.locals.set(params[i].name, {r: args[i], const: false});
+					for (i in 0...params.length) {
+						var v = args[i];
+						if (v == null) {
+							v = params[i].value;
+							if (v != null) v = expr(v);
+						}
+						me.locals.set(params[i].name, {r: v, const: false});
+					}
 					var r = null;
 					var oldDecl = declared.length;
 					if (inTry)
